@@ -14,12 +14,14 @@ import (
 type Server struct {
 	rdb      *redis.Client
 	Sessions *store.SessionStore
+	Leaderboard *store.LeaderboardStore
 }
 
 func NewServer(rdb *redis.Client, sessionTTL time.Duration) *Server {
 	return &Server{
 		rdb:      rdb,
 		Sessions: store.NewSessionStore(rdb, sessionTTL),
+		Leaderboard: store.NewLeaderboardStore(rdb),
 	}
 }
 
@@ -35,8 +37,10 @@ func (s *Server) NewRouter() *chi.Mux {
 		r.Post("/", s.loginHandler)
 	})
 
-	r.Group(func(r chi.Router) {
+	r.Route("/game", func(r chi.Router) {
 		r.Use(s.authMiddleware)
+		r.Post("/score", s.submitScoreHandler)
+		r.Get("/leaderboard", s.getLeaderboardHandler)
 	})
 
 	return r
