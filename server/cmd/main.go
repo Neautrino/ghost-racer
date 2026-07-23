@@ -29,7 +29,7 @@ func main() {
 
 	slog.Info("connected to redis")
 
-	srv := api.NewServer(rdb)
+	srv := api.NewServer(rdb, cfg.RedisTTL)
 	router := srv.NewRouter()
 	
 	go func() {
@@ -39,7 +39,7 @@ func main() {
 		}
 	}()
 
-	slog.Info("server started", "port", cfg.Port)
+	slog.Info("server starting", "port", cfg.Port)
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
