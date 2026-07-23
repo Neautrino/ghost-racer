@@ -30,7 +30,6 @@ func Load() Config {
 	}
 }
 
-
 func getenv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v

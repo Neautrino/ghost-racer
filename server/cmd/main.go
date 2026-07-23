@@ -31,7 +31,7 @@ func main() {
 
 	srv := api.NewServer(rdb, cfg.RedisTTL)
 	router := srv.NewRouter()
-	
+
 	go func() {
 		if err := http.ListenAndServe(cfg.Port, router); err != nil {
 			slog.Error("Failed to start server", "error", err)
@@ -43,7 +43,7 @@ func main() {
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	<- sigCh
+	<-sigCh
 
 	slog.Info("shutting down...")
 	cancel()

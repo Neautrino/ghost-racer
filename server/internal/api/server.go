@@ -12,13 +12,13 @@ import (
 )
 
 type Server struct {
-	rdb *redis.Client
+	rdb      *redis.Client
 	Sessions *store.SessionStore
 }
 
 func NewServer(rdb *redis.Client, sessionTTL time.Duration) *Server {
 	return &Server{
-		rdb: rdb,
+		rdb:      rdb,
 		Sessions: store.NewSessionStore(rdb, sessionTTL),
 	}
 }

@@ -31,4 +31,3 @@ func (s *SessionStore) Get(ctx context.Context, token string) (string, error) {
 func (s *SessionStore) key(token string) string {
 	return fmt.Sprintf("session:%s", token)
 }
-
