@@ -53,15 +53,8 @@ func (s *Server) submitScoreHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := r.Context()
-
-	if err := s.Leaderboard.SubmitScore(ctx, req.Mode, username, int64(req.Score)); err != nil {
-		writeError(w, http.StatusInternalServerError, "submit_score", "Could not submit score")
-		return
-	}
-
-	if err := s.Leaderboard.IncrementAttempts(ctx, req.Mode, username); err != nil {
-		writeError(w, http.StatusInternalServerError, "increment_attempts", "Could not increment attempts")
+	if err := s.Leaderboard.Finalize(ctx, req.Mode, username, int64(req.Score)); err != nil {
+		writeError(w, http.StatusInternalServerError, "finalize_failed", "Could not finalize run")
 		return
 	}
 

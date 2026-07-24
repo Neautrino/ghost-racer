@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"strconv"
+	_ "embed"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -92,4 +93,20 @@ func (l *LeaderboardStore) GetTopScores(ctx context.Context, mode string, limit 
 		})
 	}
 	return entries, nil
+}
+
+//go:embed finalize.lua
+var finalizeScript string
+
+func (l *LeaderboardStore) Finalize(ctx context.Context, mode string, username string, score int64) error {
+	keys := []string{
+		l.key(mode),
+		l.attemptsKey(mode),
+	}
+	args := []interface{}{
+		username,
+		strconv.FormatInt(score, 10),
+	}
+
+	return l.rdb.Eval(ctx, finalizeScript, keys, args...).Err()
 }
