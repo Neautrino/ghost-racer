@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/neautrino/ghost-racer/internal/store"
 	"github.com/redis/go-redis/v9"
 )
@@ -28,6 +29,15 @@ func NewServer(rdb *redis.Client, sessionTTL time.Duration) *Server {
 func (s *Server) NewRouter() *chi.Mux {
 	r := chi.NewRouter()
 
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"http://localhost:5173"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Authorization", "Content-Type"},
+		ExposedHeaders: []string{"Content-Length"},
+		AllowCredentials: false,
+		MaxAge: 300,
+	}))
+
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
@@ -37,11 +47,11 @@ func (s *Server) NewRouter() *chi.Mux {
 		r.Post("/", s.loginHandler)
 	})
 
-	r.Route("/game", func(r chi.Router) {
+	r.Group(func(r chi.Router) {
 		r.Use(s.authMiddleware)
-		r.Post("/score", s.submitScoreHandler)
-		r.Get("/leaderboard", s.getLeaderboardHandler)
+		r.Post("/game/score", s.submitScoreHandler)
 	})
+	r.Get("/game/leaderboard", s.getLeaderboardHandler)
 
 	return r
 }
