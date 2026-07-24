@@ -16,6 +16,7 @@ type Server struct {
 	rdb      *redis.Client
 	Sessions *store.SessionStore
 	Leaderboard *store.LeaderboardStore
+	RateLimiter *store.Ratelimiter
 }
 
 func NewServer(rdb *redis.Client, sessionTTL time.Duration) *Server {
@@ -23,6 +24,7 @@ func NewServer(rdb *redis.Client, sessionTTL time.Duration) *Server {
 		rdb:      rdb,
 		Sessions: store.NewSessionStore(rdb, sessionTTL),
 		Leaderboard: store.NewLeaderboardStore(rdb),
+		RateLimiter: store.NewRateLimiter(rdb, 10, time.Minute),
 	}
 }
 

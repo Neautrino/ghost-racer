@@ -19,12 +19,24 @@ type submitScoreResponse struct {
 }
 
 func (s *Server) submitScoreHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	username, ok := r.Context().Value("username").(string)
 	if !ok {
 		writeError(w, http.StatusUnauthorized, "no_user", "Could not identify user")
 		return
 	}
-
+	
+	allowed, err := s.RateLimiter.Allow(ctx, "submit:"+username)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "redis_error", "Rate limit check failed")
+		return
+	}
+	if !allowed {
+		writeError(w, http.StatusTooManyRequests, "rate_limited", "Too many submissions. Slow down.")
+		return
+	}
+	
 	var req submitScoreRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid_request", "Could not parse request body")
